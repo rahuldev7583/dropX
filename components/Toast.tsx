@@ -27,7 +27,15 @@ export function ToastSimple({
   );
 }
 
-export function ToastDestructive({ name, title, description }) {
+export function ToastDestructive({
+  name,
+  title,
+  description,
+}: {
+  name: string;
+  title: string;
+  description: string;
+}) {
   const { toast } = useToast();
 
   return (
