@@ -31,6 +31,9 @@ export async function getTokens(
         programId: new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"),
       }
     );
+
+    let idCounter = 0;
+
     const tokenDetails = await Promise.all(
       tokenAccounts.value.map(async ({ pubkey, account }) => {
         const mint = new PublicKey(account.data.parsed.info.mint);
@@ -46,6 +49,7 @@ export async function getTokens(
         const logo = tokenMetadata?.logoURI || "";
 
         return {
+          id: idCounter++,
           mint: mint.toBase58(),
           balance: formattedBalance,
           name,
@@ -84,8 +88,8 @@ const GetToken = () => {
       <h2 className="text-xl font-semibold mt-2">Token Balances</h2>
       {tokenStatus && (
         <ul>
-          {tokens.map((token, index) => (
-            <li key={index}>
+          {tokens.map((token) => (
+            <li key={token.id}>
               <div className="flex">
                 {token.logo != "" ? (
                   <img className="w-8" src={token.logo} alt="token-log" />

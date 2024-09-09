@@ -14,6 +14,7 @@ import RecoilContextProvider from "./RecoilProvider";
 import GetBalance from "@/components/GetBalance";
 import GetToken from "@/components/GetToken";
 import SendSol from "@/components/SendSol";
+import SendToken from "@/components/SendToken";
 
 export default function Home() {
   const SOL_API = process.env.NEXT_PUBLIC_SOL_API || "";
@@ -34,6 +35,7 @@ export default function Home() {
               <GetToken />
               <Airdrop />
               <SendSol />
+              <SendToken />
             </RecoilContextProvider>
           </WalletModalProvider>
         </WalletProvider>

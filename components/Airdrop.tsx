@@ -1,3 +1,6 @@
+"use client";
+
+import { useToast } from "@/hooks/use-toast";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import React, { useState } from "react";
@@ -12,10 +15,15 @@ const Airdrop = () => {
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
   const setSolBalance = useSetRecoilState(solBalanceState);
+  const { toast } = useToast();
 
   async function sendAirdrop() {
     if (!wallet || !wallet.connected || !wallet.publicKey) {
-      alert("connect your wallet");
+      // alert("connect your wallet");
+      toast({
+        variant: "destructive",
+        title: `connect your wallet`,
+      });
       return;
     }
 
@@ -38,14 +46,18 @@ const Airdrop = () => {
         }
 
         setLoading(false);
-        setAmount("");
-        fetchBalance(wallet, connection).then((balance) => {
-          setSolBalance(balance);
-        });
       }
     } catch (error) {
       console.error("Airdrop failed:", error);
       alert("Airdrop failed");
+    } finally {
+      toast({
+        title: `${parseFloat(amount)} SOL has been Airdropped`,
+      });
+      setAmount("");
+      fetchBalance(wallet, connection).then((balance) => {
+        setSolBalance(balance);
+      });
     }
   }
 
@@ -69,6 +81,7 @@ const Airdrop = () => {
         disabled={loading}
       />
       <br />
+
       <button
         onClick={sendAirdrop}
         className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"

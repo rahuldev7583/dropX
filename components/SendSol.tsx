@@ -1,3 +1,6 @@
+"use client";
+
+import { useToast } from "@/hooks/use-toast";
 import React, { useState } from "react";
 import {
   LAMPORTS_PER_SOL,
@@ -17,10 +20,15 @@ const SendSol = () => {
   const [sendSol, setSendSol] = useState({ toPublicKey: "", amount: "" });
   const [loading, setLoading] = useState(false);
   const setSolBalance = useSetRecoilState(solBalanceState);
+  const { toast } = useToast();
 
   async function sendSolana() {
     if (!wallet || !wallet.connected || !wallet.publicKey) {
-      alert("Please connect your wallet");
+      // alert("Please connect your wallet");
+      toast({
+        variant: "destructive",
+        title: `connect your wallet`,
+      });
       return;
     }
     setLoading(true);
@@ -36,17 +44,30 @@ const SendSol = () => {
       );
       const signature = await wallet.sendTransaction(transaction, connection);
       console.log("Transaction signature:", signature);
+      let confirmed = false;
+      while (!confirmed) {
+        const status = await connection.getSignatureStatus(signature);
 
-      alert("Sent " + sendSol.amount + " SOL to " + sendSol.toPublicKey);
+        if (status?.value?.confirmationStatus === "confirmed") {
+          confirmed = true;
+          console.log("Transaction confirmed");
+        } else if (status?.value?.err) {
+          throw new Error("Transaction failed");
+        }
+      }
 
-      setSendSol({ toPublicKey: "", amount: "" });
       setLoading(false);
-      fetchBalance(wallet, connection).then((balance) => {
-        setSolBalance(balance);
-      });
     } catch (error) {
       console.error("Failed to send SOL:", error);
       alert(`Failed to send SOL`);
+    } finally {
+      toast({
+        title: `${parseFloat(sendSol.amount)} SOL has been transferred`,
+      });
+      setSendSol({ toPublicKey: "", amount: "" });
+      fetchBalance(wallet, connection).then((balance) => {
+        setSolBalance(balance);
+      });
     }
   }
 

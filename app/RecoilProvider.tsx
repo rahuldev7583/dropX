@@ -11,6 +11,7 @@ export const tokenState = atom({
   key: "tokenState",
   default: [
     {
+      id: 0,
       mint: "",
       balance: "",
       symbol: "",
