@@ -10,6 +10,10 @@ import {
   WalletMultiButton,
 } from "@solana/wallet-adapter-react-ui";
 import "@solana/wallet-adapter-react-ui/styles.css";
+import RecoilContextProvider from "./RecoilProvider";
+import GetBalance from "@/components/GetBalance";
+import GetToken from "@/components/GetToken";
+import SendSol from "@/components/SendSol";
 
 export default function Home() {
   const SOL_API = process.env.NEXT_PUBLIC_SOL_API || "";
@@ -25,7 +29,12 @@ export default function Home() {
                 <WalletDisconnectButton />
               </div>
             </div>
-            <Airdrop />
+            <RecoilContextProvider>
+              <GetBalance />
+              <GetToken />
+              <Airdrop />
+              <SendSol />
+            </RecoilContextProvider>
           </WalletModalProvider>
         </WalletProvider>
       </ConnectionProvider>
