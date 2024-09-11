@@ -21,6 +21,21 @@ export const tokenState = atom({
   ],
 });
 
+export const airDropState = atom({
+  key: "airDropState",
+  default: false,
+});
+
+export const sendSolState = atom({
+  key: "sendSolState",
+  default: false,
+});
+
+export const sendTokenState = atom({
+  key: "sendTokenState",
+  default: false,
+});
+
 export default function RecoilContextProvider({
   children,
 }: {

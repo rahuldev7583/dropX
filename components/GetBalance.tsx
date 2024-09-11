@@ -41,9 +41,9 @@ const GetBalance = () => {
   }, [wallet.publicKey, connection]);
 
   return (
-    <div>
-      <h2 className="mt-2 font-semibold text-2xl">
-        SOL Balance: {parseFloat(solBalance) ? `${solBalance} SOL` : "0"}
+    <div className="ml-10 mt-8">
+      <h2 className="mt-2 font-semibold text-xl">
+        Available Balance: {parseFloat(solBalance) ? `${solBalance} SOL` : "0"}
       </h2>
     </div>
   );
