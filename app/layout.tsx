@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Inter } from "next/font/google";
+import RecoilContextProvider from "./RecoilProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -32,8 +33,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased ${inter.className}`}
       >
-        {children}
-        <Toaster />
+        <RecoilContextProvider>
+          {children}
+          <Toaster />
+        </RecoilContextProvider>
       </body>
     </html>
   );

@@ -36,6 +36,14 @@ export const sendTokenState = atom({
   default: false,
 });
 
+export const solApi = atom({
+  key: "solApi",
+  default: {
+    url: process.env.NEXT_PUBLIC_DEVNET_SOL_API || "",
+    type: "Devnet",
+  },
+});
+
 export default function RecoilContextProvider({
   children,
 }: {

@@ -10,6 +10,8 @@ import {
   PublicKey,
   Transaction,
   TransactionInstruction,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  VersionedTransaction,
 } from "@solana/web3.js";
 import React, { useState } from "react";
 import { useRecoilState, useSetRecoilState } from "recoil";
@@ -59,6 +61,33 @@ const SendToken = ({ onClose }: SendTokenProps) => {
 
     return signature;
   };
+
+  // const configureAndSendTransaction = async (
+  //   transaction: Transaction,
+  //   feePayer: PublicKey
+  // ) => {
+  //   if (!wallet.signTransaction || !wallet.publicKey) {
+  //     throw new Error("Wallet does not support signing transactions");
+  //   }
+
+  //   const { blockhash } = await connection.getLatestBlockhash();
+  //   transaction.feePayer = feePayer;
+  //   transaction.recentBlockhash = blockhash;
+
+  //   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  //   const signedTransaction = await wallet.signTransaction(transaction);
+
+  //   const versionedTransaction = new VersionedTransaction(
+  //     transaction.compileMessage()
+  //   );
+  //   versionedTransaction.sign([]);
+
+  //   const signature = await connection.sendTransaction(versionedTransaction, {
+  //     skipPreflight: false,
+  //   });
+
+  //   return signature;
+  // };
 
   async function sendSPLToken() {
     if (!wallet.publicKey || !wallet.signTransaction) return;
@@ -113,19 +142,18 @@ const SendToken = ({ onClose }: SendTokenProps) => {
       });
       return;
     }
+
     try {
       setLoading(true);
 
       const tokenMintAddress = new PublicKey(sendToken.tokenMint);
-
       const transactionInstructions: TransactionInstruction[] = [];
+
       const senderATA = await getAssociatedTokenAddress(
         tokenMintAddress,
         wallet.publicKey
       );
-
       const fromAccount = await getAccount(connection, senderATA);
-
       const receiverATA = await getAssociatedTokenAddress(
         tokenMintAddress,
         sendTo
@@ -156,21 +184,26 @@ const SendToken = ({ onClose }: SendTokenProps) => {
         transaction,
         wallet.publicKey
       );
+
       let confirmed = false;
       while (!confirmed) {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
         const status = await connection.getSignatureStatus(signature);
 
         if (status?.value?.confirmationStatus === "confirmed") {
           confirmed = true;
-          // console.log("Transaction confirmed");
+          toast({
+            title: "Transfer Successful",
+          });
         } else if (status?.value?.err) {
           throw new Error("Transaction failed");
         }
       }
 
       setLoading(false);
-      setSendTokenStatus(false);
+
       setSendToken({ id: "", tokenMint: "", amount: "", toPublicKey: "" });
+      setSendTokenStatus(false);
     } catch (error) {
       console.error("Error sending SPL token:", error);
       toast({
@@ -179,10 +212,10 @@ const SendToken = ({ onClose }: SendTokenProps) => {
         description:
           error instanceof Error ? error.message : "Unknown error occurred",
       });
+      setLoading(false);
+
+      setSendToken({ id: "", tokenMint: "", amount: "", toPublicKey: "" });
     } finally {
-      toast({
-        title: "Transfer Successful",
-      });
       getTokens(wallet, connection).then((tokens) => {
         setTokens(tokens || []);
       });

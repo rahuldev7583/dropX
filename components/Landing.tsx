@@ -7,11 +7,12 @@ import SendToken from "@/components/SendToken";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useToast } from "@/hooks/use-toast";
 import Airdrop from "./Airdrop";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 import {
   airDropState,
   sendSolState,
   sendTokenState,
+  solApi,
 } from "@/app/RecoilProvider";
 
 const Landing = () => {
@@ -20,6 +21,7 @@ const Landing = () => {
   const [airDrop, setAirDrop] = useRecoilState(airDropState);
   const [sendSolStatus, setSendSolStatus] = useRecoilState(sendSolState);
   const [sendTokenStatus, setSendTokenStatus] = useRecoilState(sendTokenState);
+  const endpoint = useRecoilValue(solApi);
 
   const handleAirdrop = () => {
     if (!wallet || !wallet.connected || !wallet.publicKey) {
@@ -29,7 +31,15 @@ const Landing = () => {
       });
       return;
     }
-    setAirDrop(true);
+    if (endpoint.type === "Devnet") {
+      setAirDrop(true);
+    } else {
+      toast({
+        variant: "destructive",
+        title: `Airdrop only support in Devnet`,
+      });
+      return;
+    }
   };
 
   const handleSendSol = () => {
@@ -83,7 +93,7 @@ const Landing = () => {
     );
   };
   return wallet.connected ? (
-    <div>
+    <div className="mt-16">
       <GetBalance />
       <GetToken />
       <Buttons className="ml-[35%]" />
@@ -94,8 +104,8 @@ const Landing = () => {
       )}
     </div>
   ) : (
-    <div>
-      <section className=" py-16">
+    <div className="mt-20">
+      <section className=" py-8">
         <div className="container mx-auto px-6 lg:px-8">
           <div className="text-center">
             <h2 className="text-3xl font-bold text-gray-100">

@@ -18,7 +18,7 @@ export async function fetchBalance(
   try {
     const solBal =
       (await connection.getBalance(wallet.publicKey)) / LAMPORTS_PER_SOL;
-    const balance = solBal.toFixed(2).toString();
+    const balance = solBal.toFixed(3).toString();
     return balance;
   } catch (error) {
     console.error("Failed to fetch balance:", error);
@@ -41,8 +41,8 @@ const GetBalance = () => {
   }, [wallet.publicKey, connection]);
 
   return (
-    <div className="ml-10 mt-8">
-      <h2 className="mt-2 font-semibold text-xl">
+    <div className="ml-10">
+      <h2 className=" font-semibold text-xl">
         Available Balance: {parseFloat(solBalance) ? `${solBalance} SOL` : "0"}
       </h2>
     </div>
