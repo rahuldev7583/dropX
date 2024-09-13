@@ -38,31 +38,58 @@ const Airdrop = ({ onClose }: AirdropProps) => {
         wallet.publicKey,
         amt * LAMPORTS_PER_SOL
       );
+
+      console.log(signature);
       let confirmed = false;
-      while (!confirmed) {
+      let attempts = 0;
+      const maxAttempts = 10;
+      const retryInterval = 2000;
+
+      while (!confirmed && attempts < maxAttempts) {
+        await new Promise((resolve) => setTimeout(resolve, retryInterval));
         const status = await connection.getSignatureStatus(signature);
+        console.log(status);
 
         if (status?.value?.confirmationStatus === "confirmed") {
           confirmed = true;
           console.log("Transaction confirmed");
+          toast({
+            title: `${parseFloat(amount)} SOL has been Airdropped`,
+          });
         } else if (status?.value?.err) {
+          setLoading(false);
+          setAirDrop(false);
+          toast({
+            variant: "destructive",
+            title: `Airdrop failed`,
+          });
           throw new Error("Transaction failed");
         }
 
-        setAmount("");
-        setAirDrop(false);
-        setLoading(false);
+        attempts += 1;
       }
+
+      if (!confirmed) {
+        setLoading(false);
+        setAirDrop(false);
+        toast({
+          variant: "destructive",
+          title: `Airdrop failed`,
+        });
+        throw new Error("Transaction confirmation timeout");
+      }
+      setAmount("");
+      setAirDrop(false);
+      setLoading(false);
     } catch (error) {
       console.error("Airdrop failed:", error);
+      setLoading(false);
+      setAirDrop(false);
       toast({
         variant: "destructive",
         title: `Airdrop failed`,
       });
     } finally {
-      toast({
-        title: `${parseFloat(amount)} SOL has been Airdropped`,
-      });
       fetchBalance(wallet, connection).then((balance) => {
         setSolBalance(balance);
       });

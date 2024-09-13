@@ -18,7 +18,7 @@ export async function fetchBalance(
   try {
     const solBal =
       (await connection.getBalance(wallet.publicKey)) / LAMPORTS_PER_SOL;
-    const balance = solBal.toFixed(3).toString();
+    const balance = solBal.toFixed(6).toString();
     return balance;
   } catch (error) {
     console.error("Failed to fetch balance:", error);

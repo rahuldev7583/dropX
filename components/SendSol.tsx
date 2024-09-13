@@ -80,7 +80,9 @@ const SendSol = ({ onClose }: SendSolProps) => {
 
     try {
       setLoading(true);
+
       const transaction = new Transaction();
+
       transaction.add(
         SystemProgram.transfer({
           fromPubkey: wallet.publicKey,
@@ -90,18 +92,44 @@ const SendSol = ({ onClose }: SendSolProps) => {
       );
 
       const signature = await wallet.sendTransaction(transaction, connection);
-      // console.log("Transaction signature:", signature);
-
+      console.log("Transaction signature:", signature);
       let confirmed = false;
-      while (!confirmed) {
+      let attempts = 0;
+      const maxAttempts = 10;
+      const retryInterval = 2000;
+
+      while (!confirmed && attempts < maxAttempts) {
+        await new Promise((resolve) => setTimeout(resolve, retryInterval));
         const status = await connection.getSignatureStatus(signature);
+        console.log(status);
+
         if (status?.value?.confirmationStatus === "confirmed") {
           confirmed = true;
           console.log("Transaction confirmed");
+          toast({
+            title: `${amt} SOL has been transferred`,
+          });
         } else if (status?.value?.err) {
+          setLoading(false);
+          toast({
+            variant: "destructive",
+            title: `Transfer failed`,
+          });
           throw new Error("Transaction failed");
         }
+
+        attempts += 1;
       }
+
+      if (!confirmed) {
+        setLoading(false);
+        toast({
+          variant: "destructive",
+          title: `Transfer failed`,
+        });
+        throw new Error("Transaction confirmation timeout");
+      }
+
       setSendSolStatus(false);
       setSendSol({ toPublicKey: "", amount: "" });
       setLoading(false);
@@ -112,9 +140,6 @@ const SendSol = ({ onClose }: SendSolProps) => {
         title: `Failed to send SOL`,
       });
     } finally {
-      toast({
-        title: `${amt} SOL has been transferred`,
-      });
       fetchBalance(wallet, connection).then((balance) => {
         setSolBalance(balance);
       });

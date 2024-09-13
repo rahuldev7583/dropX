@@ -186,18 +186,40 @@ const SendToken = ({ onClose }: SendTokenProps) => {
       );
 
       let confirmed = false;
-      while (!confirmed) {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+      let attempts = 0;
+      const maxAttempts = 10;
+      const retryInterval = 2000;
+
+      while (!confirmed && attempts < maxAttempts) {
+        await new Promise((resolve) => setTimeout(resolve, retryInterval));
         const status = await connection.getSignatureStatus(signature);
+        console.log(status);
 
         if (status?.value?.confirmationStatus === "confirmed") {
           confirmed = true;
+          console.log("Transaction confirmed");
           toast({
-            title: "Transfer Successful",
+            title: `Transfer Successful`,
           });
         } else if (status?.value?.err) {
+          setLoading(false);
+          toast({
+            variant: "destructive",
+            title: `Transfer failed`,
+          });
           throw new Error("Transaction failed");
         }
+
+        attempts += 1;
+      }
+
+      if (!confirmed) {
+        setLoading(false);
+        toast({
+          variant: "destructive",
+          title: `Transfer failed`,
+        });
+        throw new Error("Transaction confirmation timeout");
       }
 
       setLoading(false);
