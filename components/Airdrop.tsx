@@ -24,7 +24,7 @@ const Airdrop = ({ onClose }: AirdropProps) => {
   async function sendAirdrop() {
     if (!wallet || !wallet.connected || !wallet.publicKey) return;
     const amt = parseFloat(amount);
-    if (!amt || amt <= 0 || amt > 1000) {
+    if (!amt || amt <= 0 || amt > 10) {
       toast({
         variant: "destructive",
         title: `Please Enter Valid Amount`,
@@ -48,22 +48,22 @@ const Airdrop = ({ onClose }: AirdropProps) => {
       while (!confirmed && attempts < maxAttempts) {
         await new Promise((resolve) => setTimeout(resolve, retryInterval));
         const status = await connection.getSignatureStatus(signature);
-        console.log(status);
+        // console.log(status);
 
         if (status?.value?.confirmationStatus === "confirmed") {
           confirmed = true;
-          console.log("Transaction confirmed");
-          toast({
-            title: `${parseFloat(amount)} SOL has been Airdropped`,
-          });
-        } else if (status?.value?.err) {
-          setLoading(false);
-          setAirDrop(false);
-          toast({
-            variant: "destructive",
-            title: `Airdrop failed`,
-          });
-          throw new Error("Transaction failed");
+          // console.log("Transaction confirmed");
+          // console.log(status);
+          if (status?.value?.err) {
+            setLoading(false);
+            setAirDrop(false);
+
+            throw new Error("Transaction failed");
+          } else {
+            toast({
+              title: `${parseFloat(amount)} SOL has been Airdropped`,
+            });
+          }
         }
 
         attempts += 1;
@@ -112,16 +112,16 @@ const Airdrop = ({ onClose }: AirdropProps) => {
           name="amount"
           type="number"
           min={0}
-          max={100}
+          max={10}
           className="border border-gray-500 p-2 rounded w-full mb-4 bg-gray-700 text-white"
-          placeholder="Amount"
+          placeholder="Amount 0-10"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           disabled={loading}
         />
         <button
           onClick={sendAirdrop}
-          className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+          className="w-full py-2 bg-[#4b0982] hover:bg-[#8b2fd6d5] text-white rounded  disabled:opacity-50"
           disabled={loading}
         >
           {loading ? (

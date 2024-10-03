@@ -198,16 +198,15 @@ const SendToken = ({ onClose }: SendTokenProps) => {
         if (status?.value?.confirmationStatus === "confirmed") {
           confirmed = true;
           console.log("Transaction confirmed");
-          toast({
-            title: `Transfer Successful`,
-          });
-        } else if (status?.value?.err) {
-          setLoading(false);
-          toast({
-            variant: "destructive",
-            title: `Transfer failed`,
-          });
-          throw new Error("Transaction failed");
+          if (status?.value?.err) {
+            setLoading(false);
+
+            throw new Error("Transaction failed");
+          } else {
+            toast({
+              title: `Transfer Successful`,
+            });
+          }
         }
 
         attempts += 1;
@@ -230,9 +229,7 @@ const SendToken = ({ onClose }: SendTokenProps) => {
       console.error("Error sending SPL token:", error);
       toast({
         variant: "destructive",
-        title: "Error sending token",
-        description:
-          error instanceof Error ? error.message : "Unknown error occurred",
+        title: "Transfer failed",
       });
       setLoading(false);
 
@@ -340,7 +337,7 @@ const SendToken = ({ onClose }: SendTokenProps) => {
 
         <button
           onClick={sendSPLToken}
-          className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+          className="w-full py-2 bg-[#4b0982] hover:bg-[#8b2fd6d5] text-white rounded  disabled:opacity-50"
           disabled={loading}
         >
           {loading ? <LoadingSpinner message="Sending..." /> : "Send Tokens"}

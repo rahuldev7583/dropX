@@ -74,7 +74,7 @@ const GetToken = () => {
     if (wallet.connected) {
       getTokens(wallet, connection).then((tokens) => {
         setTokens(tokens || []);
-
+        // console.log(tokens);
         setTokenStatus(true);
       });
     } else {
@@ -90,6 +90,11 @@ const GetToken = () => {
           <h2 className=" font-semibold text-xl mt-2 ml-[35%]">
             Available Tokens
           </h2>
+          {tokens.length == 0 && (
+            <p className="text-2xl font-semibold ml-40 mt-4">
+              {`You don't have any tokens`}
+            </p>
+          )}
           <ul className="mt-2  grid grid-cols-3">
             {tokens.map((token) => (
               <li key={token.id} className="mt-4">

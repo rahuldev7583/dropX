@@ -106,16 +106,15 @@ const SendSol = ({ onClose }: SendSolProps) => {
         if (status?.value?.confirmationStatus === "confirmed") {
           confirmed = true;
           console.log("Transaction confirmed");
-          toast({
-            title: `${amt} SOL has been transferred`,
-          });
-        } else if (status?.value?.err) {
-          setLoading(false);
-          toast({
-            variant: "destructive",
-            title: `Transfer failed`,
-          });
-          throw new Error("Transaction failed");
+          if (status?.value?.err) {
+            setLoading(false);
+
+            throw new Error("Transaction failed");
+          } else {
+            toast({
+              title: `SOL has been transferred`,
+            });
+          }
         }
 
         attempts += 1;
@@ -196,7 +195,7 @@ const SendSol = ({ onClose }: SendSolProps) => {
 
         <button
           onClick={sendSolana}
-          className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+          className="w-full py-2 bg-[#4b0982] hover:bg-[#8b2fd6d5] text-white rounded  disabled:opacity-50"
           disabled={loading}
         >
           {loading ? <LoadingSpinner message="Sending..." /> : "Send SOL"}
