@@ -5,13 +5,12 @@ import {
   getAssociatedTokenAddress,
   getAccount,
   createAssociatedTokenAccountInstruction,
+  createTransferCheckedInstruction,
 } from "@solana/spl-token";
 import {
   PublicKey,
   Transaction,
   TransactionInstruction,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  VersionedTransaction,
 } from "@solana/web3.js";
 import React, { useState } from "react";
 import { useRecoilState, useSetRecoilState } from "recoil";
@@ -44,50 +43,6 @@ const SendToken = ({ onClose }: SendTokenProps) => {
   });
   const [tokens, setTokens] = useRecoilState(tokenState);
   const setSendTokenStatus = useSetRecoilState(sendTokenState);
-
-  const configureAndSendTransaction = async (
-    transaction: Transaction,
-    feePayer: PublicKey
-  ) => {
-    const { blockhash } = await connection.getLatestBlockhash();
-    transaction.feePayer = feePayer;
-    transaction.recentBlockhash = blockhash;
-
-    const signedTransaction = await wallet.signTransaction!(transaction);
-    const signature = await connection.sendRawTransaction(
-      signedTransaction.serialize(),
-      { skipPreflight: false }
-    );
-
-    return signature;
-  };
-
-  // const configureAndSendTransaction = async (
-  //   transaction: Transaction,
-  //   feePayer: PublicKey
-  // ) => {
-  //   if (!wallet.signTransaction || !wallet.publicKey) {
-  //     throw new Error("Wallet does not support signing transactions");
-  //   }
-
-  //   const { blockhash } = await connection.getLatestBlockhash();
-  //   transaction.feePayer = feePayer;
-  //   transaction.recentBlockhash = blockhash;
-
-  //   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  //   const signedTransaction = await wallet.signTransaction(transaction);
-
-  //   const versionedTransaction = new VersionedTransaction(
-  //     transaction.compileMessage()
-  //   );
-  //   versionedTransaction.sign([]);
-
-  //   const signature = await connection.sendTransaction(versionedTransaction, {
-  //     skipPreflight: false,
-  //   });
-
-  //   return signature;
-  // };
 
   async function sendSPLToken() {
     if (!wallet.publicKey || !wallet.signTransaction) return;
@@ -153,7 +108,7 @@ const SendToken = ({ onClose }: SendTokenProps) => {
         tokenMintAddress,
         wallet.publicKey
       );
-      const fromAccount = await getAccount(connection, senderATA);
+      const fromATA = await getAccount(connection, senderATA);
       const receiverATA = await getAssociatedTokenAddress(
         tokenMintAddress,
         sendTo
@@ -172,18 +127,38 @@ const SendToken = ({ onClose }: SendTokenProps) => {
 
       transactionInstructions.push(
         createTransferInstruction(
-          fromAccount.address,
+          fromATA.address,
           receiverATA,
           wallet.publicKey,
           BigInt(Math.round(amt * Math.pow(10, 6)))
         )
       );
 
-      const transaction = new Transaction().add(...transactionInstructions);
-      const signature = await configureAndSendTransaction(
-        transaction,
-        wallet.publicKey
+      transactionInstructions.push(
+        createTransferCheckedInstruction(
+          fromATA.address,
+          tokenMintAddress,
+          receiverATA,
+          wallet.publicKey,
+          BigInt(Math.round(amt * Math.pow(10, 6))),
+          6
+        )
       );
+
+      const transaction = new Transaction().add(...transactionInstructions);
+      console.log(transaction);
+
+      const latestBlockHash = await connection.getLatestBlockhash();
+      transaction.feePayer = wallet.publicKey;
+      transaction.recentBlockhash = latestBlockHash.blockhash;
+      console.log(transaction);
+      const signedTransaction = await wallet.signTransaction!(transaction);
+      console.log(signedTransaction);
+      const signature = await connection.sendRawTransaction(
+        signedTransaction.serialize(),
+        { skipPreflight: false }
+      );
+      console.log(signature);
 
       let confirmed = false;
       let attempts = 0;
