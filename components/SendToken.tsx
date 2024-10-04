@@ -162,7 +162,7 @@ const SendToken = ({ onClose }: SendTokenProps) => {
 
       let confirmed = false;
       let attempts = 0;
-      const maxAttempts = 10;
+      const maxAttempts = 5;
       const retryInterval = 2000;
 
       while (!confirmed && attempts < maxAttempts) {

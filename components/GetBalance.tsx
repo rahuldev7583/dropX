@@ -1,5 +1,5 @@
 import { solBalanceState } from "@/app/RecoilProvider";
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useRecoilState } from "recoil";
 import {
   useConnection,
@@ -25,24 +25,38 @@ export async function fetchBalance(
     return "";
   }
 }
+
 const GetBalance = () => {
   const wallet = useWallet();
   const { connection } = useConnection();
   const [solBalance, setSolBalance] = useRecoilState(solBalanceState);
+  const [lastPublicKey, setLastPublicKey] = useState<string | null>(null);
+  const isFetching = useRef(false); // Use useRef to keep track of fetch status between renders
 
   useEffect(() => {
-    if (wallet.connected) {
-      fetchBalance(wallet, connection).then((balance) =>
-        setSolBalance(balance)
-      );
-    } else {
-      setSolBalance("");
-    }
-  }, [wallet.publicKey, connection]);
+    const updateBalance = async () => {
+      if (wallet.connected && wallet.publicKey) {
+        const currentPublicKey = wallet.publicKey.toBase58();
+
+        if (currentPublicKey !== lastPublicKey && !isFetching.current) {
+          isFetching.current = true;
+          const balance = await fetchBalance(wallet, connection);
+          setSolBalance(balance);
+          setLastPublicKey(currentPublicKey);
+          isFetching.current = false;
+        }
+      } else {
+        setSolBalance("");
+        setLastPublicKey(null);
+      }
+    };
+
+    updateBalance();
+  }, [wallet.connected, wallet.publicKey, connection]);
 
   return (
     <div className="ml-10">
-      <h2 className=" font-semibold text-xl">
+      <h2 className="font-semibold text-xl">
         Available Balance: {parseFloat(solBalance) ? `${solBalance} SOL` : "0"}
       </h2>
     </div>

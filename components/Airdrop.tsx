@@ -42,7 +42,7 @@ const Airdrop = ({ onClose }: AirdropProps) => {
       console.log(signature);
       let confirmed = false;
       let attempts = 0;
-      const maxAttempts = 10;
+      const maxAttempts = 2;
       const retryInterval = 2000;
 
       while (!confirmed && attempts < maxAttempts) {

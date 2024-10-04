@@ -5,7 +5,7 @@ import {
   useWallet,
   WalletContextState,
 } from "@solana/wallet-adapter-react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useRecoilState } from "recoil";
 import { TokenListProvider, TokenInfo } from "@solana/spl-token-registry";
 import { Connection, PublicKey } from "@solana/web3.js";
@@ -69,41 +69,55 @@ const GetToken = () => {
   const { connection } = useConnection();
   const [tokens, setTokens] = useRecoilState(tokenState);
   const [tokenStatus, setTokenStatus] = useState(false);
+  const [lastPublicKey, setLastPublicKey] = useState<string | null>(null);
+  const isFetching = useRef(false); // Use useRef to track fetch status
 
   useEffect(() => {
-    if (wallet.connected) {
-      getTokens(wallet, connection).then((tokens) => {
-        setTokens(tokens || []);
-        // console.log(tokens);
-        setTokenStatus(true);
-      });
-    } else {
-      setTokenStatus(false);
-      setTokens([]);
-    }
-  }, [wallet.publicKey, connection]);
+    const updateTokens = async () => {
+      if (wallet.connected && wallet.publicKey) {
+        const currentPublicKey = wallet.publicKey.toBase58();
+
+        // Fetch tokens only if the wallet's public key has changed and no fetch is currently in progress
+        if (currentPublicKey !== lastPublicKey && !isFetching.current) {
+          isFetching.current = true;
+          const tokens = await getTokens(wallet, connection);
+          setTokens(tokens || []);
+          setLastPublicKey(currentPublicKey);
+          setTokenStatus(true);
+          isFetching.current = false;
+        }
+      } else {
+        setTokenStatus(false);
+        setTokens([]);
+        setLastPublicKey(null);
+      }
+    };
+
+    updateTokens();
+  }, [wallet.connected, wallet.publicKey, connection]);
 
   return (
     <div className="ml-[27%] mt-6">
       {tokenStatus && (
-        <div className="border-4 border-gray-200 rounded-xl pt-4 pb-8 pr-4 pl-8 w-[70%] ">
-          <h2 className=" font-semibold text-xl mt-2 ml-[35%]">
+        <div className="border-4 border-gray-200 rounded-xl pt-4 pb-8 pr-4 pl-8 w-[70%]">
+          <h2 className="font-semibold text-xl mt-2 ml-[35%]">
             Available Tokens
           </h2>
-          {tokens.length == 0 && (
+
+          {tokens.length === 0 && (
             <p className="text-2xl font-semibold ml-40 mt-4">
               {`You don't have any tokens`}
             </p>
           )}
-          <ul className="mt-2  grid grid-cols-3">
+          <ul className="mt-2 grid grid-cols-3">
             {tokens.map((token) => (
               <li key={token.id} className="mt-4">
                 <div className="flex">
-                  {token.logo != "" ? (
+                  {token.logo !== "" ? (
                     <img
                       className="w-8 ml-2"
                       src={token.logo}
-                      alt="token-log"
+                      alt="token-logo"
                     />
                   ) : (
                     <HiCurrencyDollar className="" size={36} />

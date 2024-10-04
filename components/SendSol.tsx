@@ -95,7 +95,7 @@ const SendSol = ({ onClose }: SendSolProps) => {
       console.log("Transaction signature:", signature);
       let confirmed = false;
       let attempts = 0;
-      const maxAttempts = 10;
+      const maxAttempts = 5;
       const retryInterval = 2000;
 
       while (!confirmed && attempts < maxAttempts) {
@@ -138,6 +138,9 @@ const SendSol = ({ onClose }: SendSolProps) => {
         variant: "destructive",
         title: `Failed to send SOL`,
       });
+      setSendSolStatus(false);
+      setSendSol({ toPublicKey: "", amount: "" });
+      setLoading(false);
     } finally {
       fetchBalance(wallet, connection).then((balance) => {
         setSolBalance(balance);
