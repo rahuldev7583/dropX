@@ -70,14 +70,11 @@ const GetToken = () => {
   const [tokens, setTokens] = useRecoilState(tokenState);
   const [tokenStatus, setTokenStatus] = useState(false);
   const [lastPublicKey, setLastPublicKey] = useState<string | null>(null);
-  const isFetching = useRef(false); // Use useRef to track fetch status
-
+  const isFetching = useRef(false); 
   useEffect(() => {
     const updateTokens = async () => {
       if (wallet.connected && wallet.publicKey) {
         const currentPublicKey = wallet.publicKey.toBase58();
-
-        // Fetch tokens only if the wallet's public key has changed and no fetch is currently in progress
         if (currentPublicKey !== lastPublicKey && !isFetching.current) {
           isFetching.current = true;
           const tokens = await getTokens(wallet, connection);

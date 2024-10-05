@@ -31,7 +31,7 @@ const GetBalance = () => {
   const { connection } = useConnection();
   const [solBalance, setSolBalance] = useRecoilState(solBalanceState);
   const [lastPublicKey, setLastPublicKey] = useState<string | null>(null);
-  const isFetching = useRef(false); // Use useRef to keep track of fetch status between renders
+  const isFetching = useRef(false);
 
   useEffect(() => {
     const updateBalance = async () => {
