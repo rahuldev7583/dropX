@@ -10,6 +10,7 @@ import Airdrop from "./Airdrop";
 import { useRecoilState, useRecoilValue } from "recoil";
 import {
   airDropState,
+  historyState,
   sendSolState,
   sendTokenState,
   solApi,
@@ -17,7 +18,8 @@ import {
   tokenState,
 } from "@/app/RecoilProvider";
 import Image from "next/image";
-import solana from "@/app/solana.jpg";
+import solana from "@/app/sol-logo.svg";
+import GetTransaction from "./GetTransaction";
 
 const Landing = () => {
   const wallet = useWallet();
@@ -25,6 +27,7 @@ const Landing = () => {
   const [airDrop, setAirDrop] = useRecoilState(airDropState);
   const [sendSolStatus, setSendSolStatus] = useRecoilState(sendSolState);
   const [sendTokenStatus, setSendTokenStatus] = useRecoilState(sendTokenState);
+  const [historyStatus, setHistoryStatus] = useRecoilState(historyState);
   const endpoint = useRecoilValue(solApi);
   const tokens = useRecoilValue(tokenState);
   const solBalance = useRecoilValue(solBalanceState);
@@ -84,30 +87,48 @@ const Landing = () => {
     setSendTokenStatus(true);
   };
 
+  const handleHistory = () => {
+    if (!wallet || !wallet.connected || !wallet.publicKey) {
+      toast({
+        variant: "destructive",
+        title: `connect your wallet`,
+      });
+      return;
+    }
+    setHistoryStatus(true);
+  };
   interface ButtonProp {
     className?: string;
   }
 
   const Buttons = ({ className }: ButtonProp) => {
     return (
-      <div className={`mt-12 flex flex-col lg:flex-row  gap-6 ${className}`}>
+      <div
+        className={` bg-[#4b0982] px-8 py-2 rounded-full mt-12 flex flex-col lg:flex-row font-bold text-lg gap-6 ${className}`}
+      >
         <button
           onClick={handleAirdrop}
-          className="w-full lg:w-auto hover:bg-[#8b2fd6d5] bg-[#4b0982] text-white font-medium py-3 px-8 rounded-lg transition duration-300"
+          className="w-full lg:w-auto  hover:opacity-50  text-white font-medium py-3 px-4 rounded-lg transition duration-300"
         >
-          Airdrop SOL
+          Airdrop
         </button>
         <button
           onClick={handleSendSol}
-          className="w-full lg:w-auto hover:bg-[#8b2fd6d5]  bg-[#4b0982]  text-white font-medium py-3 px-8 rounded-lg transition duration-300"
+          className="w-full lg:w-auto hover:opacity-50 text-white font-medium py-3 px-4 rounded-lg transition duration-300"
         >
           Send SOL
         </button>
         <button
           onClick={handleSendToken}
-          className="w-full lg:w-auto hover:bg-[#8b2fd6d5] bg-[#4b0982]  text-white font-medium py-3 px-8 rounded-lg transition duration-300"
+          className="w-full lg:w-auto hover:opacity-50 text-white font-medium py-3 px-4 rounded-lg transition duration-300"
         >
           Send Token
+        </button>
+        <button
+          onClick={handleHistory}
+          className="w-full lg:w-auto hover:opacity-50 text-white font-medium py-3 px-4 rounded-lg transition duration-300"
+        >
+          History
         </button>
       </div>
     );
@@ -115,8 +136,13 @@ const Landing = () => {
   return wallet.connected ? (
     <div className="mt-16">
       <GetBalance />
-      <GetToken />
-      <Buttons className="ml-[35%]" />
+      {!historyStatus ? (
+        <GetToken />
+      ) : (
+        <GetTransaction onClose={() => setHistoryStatus(false)} />
+      )}
+
+      <Buttons className="justify-center ml-[32%] z-50 fixed top-[80%]" />
 
       {airDrop && <Airdrop onClose={() => setAirDrop(false)} />}
       {sendSolStatus && <SendSol onClose={() => setSendSolStatus(false)} />}
@@ -137,11 +163,11 @@ const Landing = () => {
             </p>
           </div>
           <Image
-            className="w-[40%] ml-[30%] rounded-2xl mt-8"
+            className="w-[30%]  ml-[35%] rounded-2xl mt-12"
             src={solana}
             alt="solana-img"
           />
-          <Buttons className="justify-center" />
+          <Buttons className="justify-center ml-[30%] z-50 fixed top-[82%]" />
         </div>
       </section>
     </div>

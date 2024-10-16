@@ -5,9 +5,14 @@ import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import React, { useState } from "react";
 import LoadingSpinner from "./Loading";
-import { useSetRecoilState } from "recoil";
-import { airDropState, solBalanceState } from "@/app/RecoilProvider";
+import { useRecoilState, useSetRecoilState } from "recoil";
+import {
+  airDropState,
+  solBalanceState,
+  transactionHistoryState,
+} from "@/app/RecoilProvider";
 import { fetchBalance } from "./GetBalance";
+import { fetchTransactions } from "./GetTransaction";
 interface AirdropProps {
   onClose: () => void;
 }
@@ -18,6 +23,9 @@ const Airdrop = ({ onClose }: AirdropProps) => {
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
   const setSolBalance = useSetRecoilState(solBalanceState);
+  const [transactionHistory, setTransactionHistory] = useRecoilState(
+    transactionHistoryState
+  );
   const { toast } = useToast();
   const setAirDrop = useSetRecoilState(airDropState);
 
@@ -60,9 +68,18 @@ const Airdrop = ({ onClose }: AirdropProps) => {
 
             throw new Error("Transaction failed");
           } else {
+            setAmount("");
+            setAirDrop(false);
+            setLoading(false);
             toast({
               title: `${parseFloat(amount)} SOL has been Airdropped`,
             });
+            const txn = await fetchTransactions(wallet, connection, 1);
+            console.log(txn);
+
+            setTransactionHistory((prevState) => [...txn, ...prevState]);
+
+            console.log(transactionHistory);
           }
         }
 

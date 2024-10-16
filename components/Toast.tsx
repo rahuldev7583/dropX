@@ -41,6 +41,7 @@ export function ToastDestructive({
   return (
     <Button
       variant="outline"
+      className=""
       onClick={() => {
         toast({
           variant: "destructive",

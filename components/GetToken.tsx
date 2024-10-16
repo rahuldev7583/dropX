@@ -70,7 +70,9 @@ const GetToken = () => {
   const [tokens, setTokens] = useRecoilState(tokenState);
   const [tokenStatus, setTokenStatus] = useState(false);
   const [lastPublicKey, setLastPublicKey] = useState<string | null>(null);
-  const isFetching = useRef(false); 
+  const isFetching = useRef(false);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     const updateTokens = async () => {
       if (wallet.connected && wallet.publicKey) {
@@ -82,57 +84,64 @@ const GetToken = () => {
           setLastPublicKey(currentPublicKey);
           setTokenStatus(true);
           isFetching.current = false;
+          setLoading(false);
+          console.log(tokens);
         }
       } else {
         setTokenStatus(false);
         setTokens([]);
         setLastPublicKey(null);
+        setLoading(false);
       }
     };
 
     updateTokens();
   }, [wallet.connected, wallet.publicKey, connection]);
 
-  return (
-    <div className="ml-[27%] mt-6">
+  return !loading ? (
+    <div className="ml-[32%] mt-2 z-10 ">
       {tokenStatus && (
-        <div className="border-4 border-gray-200 rounded-xl pt-4 pb-8 pr-4 pl-8 w-[70%]">
-          <h2 className="font-semibold text-xl mt-2 ml-[35%]">
-            Available Tokens
-          </h2>
+        <div className=" rounded-xl pb-8 pr-4 pl-8 w-[70%] ">
+          <h2 className="font-semibold text-xl  ml-[25%]">Available Tokens</h2>
 
           {tokens.length === 0 && (
             <p className="text-2xl font-semibold ml-40 mt-4">
               {`You don't have any tokens`}
             </p>
           )}
-          <ul className="mt-2 grid grid-cols-3">
-            {tokens.map((token) => (
-              <li key={token.id} className="mt-4">
-                <div className="flex">
-                  {token.logo !== "" ? (
-                    <img
-                      className="w-8 ml-2"
-                      src={token.logo}
-                      alt="token-logo"
-                    />
-                  ) : (
-                    <HiCurrencyDollar className="" size={36} />
-                  )}
-                  <p className="font-semibold text-xl ml-2 mt-1">
-                    {token.balance}
-                  </p>
-                  <p className="font-semibold text-lg ml-2 mt-1">
-                    {" "}
-                    {token.symbol}
-                  </p>
-                </div>
-              </li>
-            ))}
+          <ul className="mt-6 grid grid-cols-2">
+            {tokens.map((token) => {
+              if (parseFloat(token.balance) != 0) {
+                return (
+                  <li key={token.id} className="mt-4">
+                    <div className="flex">
+                      {token.logo !== "" ? (
+                        <img
+                          className="w-8 ml-2"
+                          src={token.logo}
+                          alt="token-logo"
+                        />
+                      ) : (
+                        <HiCurrencyDollar className="" size={36} />
+                      )}
+                      <p className="font-semibold text-xl ml-2 mt-1">
+                        {token.balance}
+                      </p>
+                      <p className="font-semibold text-lg ml-2 mt-1">
+                        {" "}
+                        {token.symbol}
+                      </p>
+                    </div>
+                  </li>
+                );
+              }
+            })}
           </ul>
         </div>
       )}
     </div>
+  ) : (
+    <div className="ml-[48%] mt-10 z-10 w-16 h-16 border-4 border-slate-400 border-t-transparent border-solid rounded-full animate-spin"></div>
   );
 };
 

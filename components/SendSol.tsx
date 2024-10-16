@@ -12,7 +12,12 @@ import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import LoadingSpinner from "./Loading";
 import { fetchBalance } from "./GetBalance";
 import { useRecoilState, useSetRecoilState } from "recoil";
-import { sendSolState, solBalanceState } from "@/app/RecoilProvider";
+import {
+  sendSolState,
+  solBalanceState,
+  transactionHistoryState,
+} from "@/app/RecoilProvider";
+import { fetchTransactions } from "./GetTransaction";
 
 interface SendSolProps {
   onClose: () => void;
@@ -28,6 +33,9 @@ const SendSol = ({ onClose }: SendSolProps) => {
 
   const { toast } = useToast();
   const setSendSolStatus = useSetRecoilState(sendSolState);
+  const [transactionHistory, setTransactionHistory] = useRecoilState(
+    transactionHistoryState
+  );
 
   async function sendSolana() {
     if (!wallet || !wallet.connected || !wallet.publicKey) {
@@ -111,9 +119,18 @@ const SendSol = ({ onClose }: SendSolProps) => {
 
             throw new Error("Transaction failed");
           } else {
+            setSendSolStatus(false);
+            setSendSol({ toPublicKey: "", amount: "" });
+            setLoading(false);
             toast({
               title: `SOL has been transferred`,
             });
+            const txn = await fetchTransactions(wallet, connection, 1);
+            console.log(txn);
+
+            setTransactionHistory((prevState) => [...txn, ...prevState]);
+
+            console.log(transactionHistory);
           }
         }
 

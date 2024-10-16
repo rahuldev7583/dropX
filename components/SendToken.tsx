@@ -1,7 +1,10 @@
-import { sendTokenState, tokenState } from "@/app/RecoilProvider";
+import {
+  sendTokenState,
+  tokenState,
+  transactionHistoryState,
+} from "@/app/RecoilProvider";
 import { useToast } from "@/hooks/use-toast";
 import {
-  createTransferInstruction,
   getAssociatedTokenAddress,
   getAccount,
   createAssociatedTokenAccountInstruction,
@@ -26,6 +29,7 @@ import {
 } from "@/components/ui/select";
 import { HiCurrencyDollar } from "react-icons/hi";
 import { getTokens } from "./GetToken";
+import { fetchTransactions } from "./GetTransaction";
 interface SendTokenProps {
   onClose: () => void;
 }
@@ -43,6 +47,9 @@ const SendToken = ({ onClose }: SendTokenProps) => {
   });
   const [tokens, setTokens] = useRecoilState(tokenState);
   const setSendTokenStatus = useSetRecoilState(sendTokenState);
+  const [transactionHistory, setTransactionHistory] = useRecoilState(
+    transactionHistoryState
+  );
 
   async function sendSPLToken() {
     if (!wallet.publicKey || !wallet.signTransaction) return;
@@ -126,15 +133,6 @@ const SendToken = ({ onClose }: SendTokenProps) => {
       }
 
       transactionInstructions.push(
-        createTransferInstruction(
-          fromATA.address,
-          receiverATA,
-          wallet.publicKey,
-          BigInt(Math.round(amt * Math.pow(10, 6)))
-        )
-      );
-
-      transactionInstructions.push(
         createTransferCheckedInstruction(
           fromATA.address,
           tokenMintAddress,
@@ -178,9 +176,24 @@ const SendToken = ({ onClose }: SendTokenProps) => {
 
             throw new Error("Transaction failed");
           } else {
+            setLoading(false);
+
+            setSendToken({
+              id: "",
+              tokenMint: "",
+              amount: "",
+              toPublicKey: "",
+            });
+            setSendTokenStatus(false);
             toast({
               title: `Transfer Successful`,
             });
+            const txn = await fetchTransactions(wallet, connection, 1);
+            console.log(txn);
+
+            setTransactionHistory((prevState) => [...txn, ...prevState]);
+
+            console.log(transactionHistory);
           }
         }
 
@@ -209,6 +222,7 @@ const SendToken = ({ onClose }: SendTokenProps) => {
       setLoading(false);
 
       setSendToken({ id: "", tokenMint: "", amount: "", toPublicKey: "" });
+      setSendTokenStatus(false);
     } finally {
       getTokens(wallet, connection).then((tokens) => {
         setTokens(tokens || []);
