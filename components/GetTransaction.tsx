@@ -200,37 +200,35 @@ export const GetTransaction = ({ onClose }: HistoryProps) => {
   }, [wallet.connected, wallet.publicKey, connection]);
 
   return !loading ? (
-    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-      <div className="relative bg-slate-800 text-gray-100 px-8 py-6 pb-20 rounded-xl w-[75%] shadow-lg top-6 max-h-[80vh] overflow-y-auto">
-        <button
-          onClick={onClose}
-          className="absolute top-2 right-2 bg-transparent text-gray-100 text-2xl"
-        >
-          ✖
-        </button>
-        <h1 className="text-xl font-semibold mb-8 text-center">
-          Transaction History
-        </h1>
-        <div className="grid grid-cols-2 gap-4">
-          {transactionHistory.map((txn, idx) => (
-            <div
-              key={idx}
-              className="border-2 border-white p-4 rounded-md w-full "
-            >
-              <h2 className="font-semibold">{txn.type}</h2>
+    <div className="relative  text-gray-100 px-8 py-6 pb-36 rounded-xl w-[75%] shadow-lg top-0 left-48">
+      <button
+        onClick={onClose}
+        className="absolute top-2 right-2 bg-transparent text-gray-100 text-2xl"
+      >
+        ✖
+      </button>
+      <h1 className="text-xl font-semibold mb-8 text-center">
+        Transaction History
+      </h1>
+      <div className="grid grid-cols-2 gap-4">
+        {transactionHistory.map((txn, idx) => (
+          <div
+            key={idx}
+            className="border-2 border-white p-4 rounded-md w-full "
+          >
+            <h2 className="font-semibold">{txn.type}</h2>
+            <p>
+              {txn.type === "Send" ? "To" : "From"}: {txn.walletKey}
+            </p>
+            {txn.solAmount && <p>{txn.solAmount} SOL</p>}
+            {txn.tokenAmount && (
               <p>
-                {txn.type === "Send" ? "To" : "From"}: {txn.walletKey}
+                {txn.tokenAmount} {txn.tokenMetadata.symbol}
               </p>
-              {txn.solAmount && <p>{txn.solAmount} SOL</p>}
-              {txn.tokenAmount && (
-                <p>
-                  {txn.tokenAmount} {txn.tokenMetadata.symbol}
-                </p>
-              )}
-              <p>Date: {txn.formattedDate}</p>
-            </div>
-          ))}
-        </div>
+            )}
+            <p>Date: {txn.formattedDate}</p>
+          </div>
+        ))}
       </div>
     </div>
   ) : (
