@@ -36,6 +36,11 @@ export const sendTokenState = atom({
   default: false,
 });
 
+export const historyState = atom({
+  key: "historyState",
+  default: false,
+});
+
 export const solApi = atom({
   key: "solApi",
   default: {
@@ -44,6 +49,25 @@ export const solApi = atom({
   },
 });
 
+interface Transaction {
+  type: string;
+  walletKey: string;
+  solAmount: string;
+  tokenAmount: string;
+  mint: string;
+  signature: string;
+  tokenMetadata: {
+    name: string;
+    image: string;
+    symbol: string;
+  };
+  formattedDate: string;
+}
+
+export const transactionHistoryState = atom<Transaction[]>({
+  key: "transactionHistory",
+  default: [],
+});
 export default function RecoilContextProvider({
   children,
 }: {
