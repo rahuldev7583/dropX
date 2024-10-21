@@ -25,7 +25,7 @@ export const fetchSignatures = async (
         limit: limit,
       }
     );
-    console.log(signatureArray);
+    // console.log(signatureArray);
 
     for (let i = 0; i < signatureArray.length; i++) {
       signatures.push({
@@ -47,17 +47,27 @@ export const fetchTransactions = async (
   limit: number
 ) => {
   const signatures = await fetchSignatures(wallet, connection, limit);
-  console.log(signatures);
+  // console.log(signatures);
   if (signatures === "") {
     return [];
   }
   const filteredSigns = signatures.map((sign) => sign.signature);
-  const transactions = await connection.getParsedTransactions(filteredSigns);
-  console.log(transactions);
+  // console.log(filteredSigns);
+  // const transactions = await connection.getParsedTransactions(filteredSigns);
+  // console.log(transactions);
+  const transactions = await Promise.all(
+    filteredSigns.map(async (sign) => {
+      const txn = await connection.getParsedTransaction(sign);
+
+      return txn;
+    })
+  );
+  // console.log(transactions);
+
   const validTransactions = transactions.filter(
     (txn) => txn?.meta?.err === null
   );
-  console.log(validTransactions);
+  // console.log(validTransactions);
   const tokenList = await new TokenListProvider().resolve();
   const tokenMap = tokenList.getList().reduce((map, item) => {
     map.set(item.address, item);
@@ -125,14 +135,24 @@ export const fetchTransactions = async (
             };
           }
         } else {
-          result.solAmount = txn.meta?.preBalances[0]
-            ? (
-                (txn.meta?.preBalances[0] - txn.meta?.postBalances[0]) /
+          result.solAmount =
+            txn.meta?.preBalances[0] &&
+            Number.isInteger(
+              (txn.meta?.preBalances[0] - txn.meta?.postBalances[0]) /
                 LAMPORTS_PER_SOL
-              )
-                .toFixed(3)
-                .toString()
-            : "";
+            )
+              ? (
+                  (txn.meta?.preBalances[0] - txn.meta?.postBalances[0]) /
+                  LAMPORTS_PER_SOL
+                ).toString()
+              : txn.meta?.preBalances[0]
+              ? (
+                  (txn.meta?.preBalances[0] - txn.meta?.postBalances[0]) /
+                  LAMPORTS_PER_SOL
+                )
+                  .toFixed(6)
+                  .toString()
+              : "";
         }
       } else if (
         txn?.transaction.message.accountKeys[0].signer &&
@@ -142,14 +162,24 @@ export const fetchTransactions = async (
         result.type = "Received";
         result.walletKey =
           txn.transaction.message.accountKeys[0].pubkey.toString();
-        result.solAmount = txn.meta?.preBalances[1]
-          ? (
-              (txn.meta?.postBalances[1] - txn.meta?.preBalances[1]) /
+        result.solAmount =
+          txn.meta?.preBalances[1] &&
+          Number.isInteger(
+            (txn.meta?.postBalances[1] - txn.meta?.preBalances[1]) /
               LAMPORTS_PER_SOL
-            )
-              .toFixed(3)
-              .toString()
-          : "";
+          )
+            ? (
+                (txn.meta?.postBalances[1] - txn.meta?.preBalances[1]) /
+                LAMPORTS_PER_SOL
+              ).toString()
+            : txn.meta?.preBalances[0]
+            ? (
+                (txn.meta?.postBalances[1] - txn.meta?.preBalances[1]) /
+                LAMPORTS_PER_SOL
+              )
+                .toFixed(6)
+                .toString()
+            : "";
       }
 
       return result;
@@ -183,9 +213,9 @@ export const GetTransaction = ({ onClose }: HistoryProps) => {
           isFetching.current = true;
 
           const txn = await fetchTransactions(wallet, connection, 10);
-          console.log(txn);
+          // console.log(txn);
           setTransactionHistory(() => [...txn]);
-          console.log(transactionHistory);
+          // console.log(transactionHistory);
           setLoading(false);
           setLastPublicKey(currentPublicKey);
           isFetching.current = false;
@@ -200,35 +230,34 @@ export const GetTransaction = ({ onClose }: HistoryProps) => {
   }, [wallet.connected, wallet.publicKey, connection]);
 
   return !loading ? (
-    <div className="relative  text-gray-100 px-8 py-6 pb-36 rounded-xl w-[75%] shadow-lg top-0 left-48">
-      <button
-        onClick={onClose}
-        className="absolute top-2 right-2 bg-transparent text-gray-100 text-2xl"
-      >
-        ✖
-      </button>
-      <h1 className="text-xl font-semibold mb-8 text-center">
-        Transaction History
-      </h1>
-      <div className="grid grid-cols-2 gap-4">
-        {transactionHistory.map((txn, idx) => (
-          <div
-            key={idx}
-            className="border-2 border-white p-4 rounded-md w-full "
-          >
-            <h2 className="font-semibold">{txn.type}</h2>
-            <p>
-              {txn.type === "Send" ? "To" : "From"}: {txn.walletKey}
-            </p>
-            {txn.solAmount && <p>{txn.solAmount} SOL</p>}
-            {txn.tokenAmount && (
+    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+      <div className="absolute bg-slate-800 text-gray-100 px-8 py-5 pb-24 rounded-xl w-[75%] shadow-lg top-20 max-h-[85vh] overflow-y-auto">
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-2 bg-transparent text-gray-100 text-2xl"
+        >
+          ✖
+        </button>
+        <h1 className="text-2xl text-slate-200 font-bold mb-8 text-center">
+          Transaction History
+        </h1>
+        <div className="md:grid md:grid-cols-2 gap-4">
+          {transactionHistory.map((txn, idx) => (
+            <div key={idx} className=" bg-[#551e82] p-4 rounded-xl w-full ">
+              <h2 className="font-semibold">{txn.type}</h2>
               <p>
-                {txn.tokenAmount} {txn.tokenMetadata.symbol}
+                {txn.type === "Send" ? "To" : "From"}: {txn.walletKey}
               </p>
-            )}
-            <p>Date: {txn.formattedDate}</p>
-          </div>
-        ))}
+              {txn.solAmount && <p>{txn.solAmount} SOL</p>}
+              {txn.tokenAmount && (
+                <p>
+                  {txn.tokenAmount} {txn.tokenMetadata.symbol}
+                </p>
+              )}
+              <p>Date: {txn.formattedDate}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   ) : (

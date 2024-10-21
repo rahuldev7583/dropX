@@ -33,9 +33,7 @@ const SendSol = ({ onClose }: SendSolProps) => {
 
   const { toast } = useToast();
   const setSendSolStatus = useSetRecoilState(sendSolState);
-  const [transactionHistory, setTransactionHistory] = useRecoilState(
-    transactionHistoryState
-  );
+  const setTransactionHistory = useSetRecoilState(transactionHistoryState);
 
   async function sendSolana() {
     if (!wallet || !wallet.connected || !wallet.publicKey) {
@@ -109,11 +107,11 @@ const SendSol = ({ onClose }: SendSolProps) => {
       while (!confirmed && attempts < maxAttempts) {
         await new Promise((resolve) => setTimeout(resolve, retryInterval));
         const status = await connection.getSignatureStatus(signature);
-        console.log(status);
+        // console.log(status);
 
         if (status?.value?.confirmationStatus === "confirmed") {
           confirmed = true;
-          console.log("Transaction confirmed");
+          // console.log("Transaction confirmed");
           if (status?.value?.err) {
             setLoading(false);
 
@@ -126,11 +124,9 @@ const SendSol = ({ onClose }: SendSolProps) => {
               title: `SOL has been transferred`,
             });
             const txn = await fetchTransactions(wallet, connection, 1);
-            console.log(txn);
+            // console.log(txn);
 
             setTransactionHistory((prevState) => [...txn, ...prevState]);
-
-            console.log(transactionHistory);
           }
         }
 

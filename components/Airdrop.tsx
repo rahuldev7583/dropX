@@ -5,7 +5,7 @@ import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import React, { useState } from "react";
 import LoadingSpinner from "./Loading";
-import { useRecoilState, useSetRecoilState } from "recoil";
+import { useSetRecoilState } from "recoil";
 import {
   airDropState,
   solBalanceState,
@@ -23,9 +23,7 @@ const Airdrop = ({ onClose }: AirdropProps) => {
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
   const setSolBalance = useSetRecoilState(solBalanceState);
-  const [transactionHistory, setTransactionHistory] = useRecoilState(
-    transactionHistoryState
-  );
+  const setTransactionHistory = useSetRecoilState(transactionHistoryState);
   const { toast } = useToast();
   const setAirDrop = useSetRecoilState(airDropState);
 
@@ -47,7 +45,7 @@ const Airdrop = ({ onClose }: AirdropProps) => {
         amt * LAMPORTS_PER_SOL
       );
 
-      console.log(signature);
+      // console.log(signature);
       let confirmed = false;
       let attempts = 0;
       const maxAttempts = 2;
@@ -56,12 +54,10 @@ const Airdrop = ({ onClose }: AirdropProps) => {
       while (!confirmed && attempts < maxAttempts) {
         await new Promise((resolve) => setTimeout(resolve, retryInterval));
         const status = await connection.getSignatureStatus(signature);
-        // console.log(status);
 
         if (status?.value?.confirmationStatus === "confirmed") {
           confirmed = true;
-          // console.log("Transaction confirmed");
-          // console.log(status);
+
           if (status?.value?.err) {
             setLoading(false);
             setAirDrop(false);
@@ -75,11 +71,7 @@ const Airdrop = ({ onClose }: AirdropProps) => {
               title: `${parseFloat(amount)} SOL has been Airdropped`,
             });
             const txn = await fetchTransactions(wallet, connection, 1);
-            console.log(txn);
-
             setTransactionHistory((prevState) => [...txn, ...prevState]);
-
-            console.log(transactionHistory);
           }
         }
 

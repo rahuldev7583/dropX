@@ -85,7 +85,7 @@ const GetToken = () => {
           setTokenStatus(true);
           isFetching.current = false;
           setLoading(false);
-          console.log(tokens);
+          // console.log(tokens);
         }
       } else {
         setTokenStatus(false);

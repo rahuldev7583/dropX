@@ -47,9 +47,7 @@ const SendToken = ({ onClose }: SendTokenProps) => {
   });
   const [tokens, setTokens] = useRecoilState(tokenState);
   const setSendTokenStatus = useSetRecoilState(sendTokenState);
-  const [transactionHistory, setTransactionHistory] = useRecoilState(
-    transactionHistoryState
-  );
+  const setTransactionHistory = useSetRecoilState(transactionHistoryState);
 
   async function sendSPLToken() {
     if (!wallet.publicKey || !wallet.signTransaction) return;
@@ -144,19 +142,19 @@ const SendToken = ({ onClose }: SendTokenProps) => {
       );
 
       const transaction = new Transaction().add(...transactionInstructions);
-      console.log(transaction);
+      // console.log(transaction);
 
       const latestBlockHash = await connection.getLatestBlockhash();
       transaction.feePayer = wallet.publicKey;
       transaction.recentBlockhash = latestBlockHash.blockhash;
-      console.log(transaction);
+      // console.log(transaction);
       const signedTransaction = await wallet.signTransaction!(transaction);
-      console.log(signedTransaction);
+      // console.log(signedTransaction);
       const signature = await connection.sendRawTransaction(
         signedTransaction.serialize(),
         { skipPreflight: false }
       );
-      console.log(signature);
+      // console.log(signature);
 
       let confirmed = false;
       let attempts = 0;
@@ -166,11 +164,11 @@ const SendToken = ({ onClose }: SendTokenProps) => {
       while (!confirmed && attempts < maxAttempts) {
         await new Promise((resolve) => setTimeout(resolve, retryInterval));
         const status = await connection.getSignatureStatus(signature);
-        console.log(status);
+        // console.log(status);
 
         if (status?.value?.confirmationStatus === "confirmed") {
           confirmed = true;
-          console.log("Transaction confirmed");
+          // console.log("Transaction confirmed");
           if (status?.value?.err) {
             setLoading(false);
 
@@ -189,11 +187,9 @@ const SendToken = ({ onClose }: SendTokenProps) => {
               title: `Transfer Successful`,
             });
             const txn = await fetchTransactions(wallet, connection, 1);
-            console.log(txn);
+            // console.log(txn);
 
             setTransactionHistory((prevState) => [...txn, ...prevState]);
-
-            console.log(transactionHistory);
           }
         }
 

@@ -41,6 +41,7 @@ const Landing = () => {
       return;
     }
     if (endpoint.type === "Devnet") {
+      setHistoryStatus(false);
       setAirDrop(true);
     } else {
       toast({
@@ -66,6 +67,7 @@ const Landing = () => {
       });
       return;
     }
+    setHistoryStatus(false);
     setSendSolStatus(true);
   };
 
@@ -84,6 +86,7 @@ const Landing = () => {
       });
       return;
     }
+    setHistoryStatus(false);
     setSendTokenStatus(true);
   };
 
@@ -104,7 +107,7 @@ const Landing = () => {
   const Buttons = ({ className }: ButtonProp) => {
     return (
       <div
-        className={` bg-[#4b0982] px-8 py-2 rounded-full mt-12 flex flex-col lg:flex-row font-bold text-lg gap-6 ${className}`}
+        className={` bg-[#4b0982] px-8 py-2 rounded-full mt-12 flex flex-col lg:flex-row font-bold text-lg gap-6 shadow-xl ${className}`}
       >
         <button
           onClick={handleAirdrop}
