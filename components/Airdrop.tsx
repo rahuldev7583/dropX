@@ -106,7 +106,7 @@ const Airdrop = ({ onClose }: AirdropProps) => {
   }
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 ">
       <div className="absolute bg-slate-800 text-gray-100 px-8 py-10 rounded-xl w-[30%] shadow-lg top-56">
         <button
           onClick={onClose}
