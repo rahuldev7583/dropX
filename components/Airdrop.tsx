@@ -13,6 +13,9 @@ import {
 } from "@/app/RecoilProvider";
 import { fetchBalance } from "./GetBalance";
 import { fetchTransactions } from "./GetTransaction";
+import axios from "axios";
+import { log } from "console";
+
 interface AirdropProps {
   onClose: () => void;
 }
@@ -26,6 +29,7 @@ const Airdrop = ({ onClose }: AirdropProps) => {
   const setTransactionHistory = useSetRecoilState(transactionHistoryState);
   const { toast } = useToast();
   const setAirDrop = useSetRecoilState(airDropState);
+  const DEVNET_AIRDROP_API = process.env.NEXT_PUBLIC_DEVNET_AIRDROP || "";
 
   async function sendAirdrop() {
     if (!wallet || !wallet.connected || !wallet.publicKey) return;
@@ -40,15 +44,22 @@ const Airdrop = ({ onClose }: AirdropProps) => {
     }
     try {
       setLoading(true);
-      const signature = await connection.requestAirdrop(
-        wallet.publicKey,
-        amt * LAMPORTS_PER_SOL
-      );
+      const response:any = await axios.post(DEVNET_AIRDROP_API,  {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "requestAirdrop",
+        "params": [
+          wallet.publicKey,
+          amt * LAMPORTS_PER_SOL
+        ]
+      })
 
-      // console.log(signature);
+   
+const signature = response.data.result;
+      console.log(signature);
       let confirmed = false;
       let attempts = 0;
-      const maxAttempts = 2;
+      const maxAttempts = 10;
       const retryInterval = 2000;
 
       while (!confirmed && attempts < maxAttempts) {
@@ -90,13 +101,18 @@ const Airdrop = ({ onClose }: AirdropProps) => {
       setAmount("");
       setAirDrop(false);
       setLoading(false);
-    } catch (error) {
+    } catch (error:any) {
+      console.log({error});
+      
       console.error("Airdrop failed:", error);
       setLoading(false);
       setAirDrop(false);
+      let description = "Airdrop failed. Please try again later.";
+
       toast({
         variant: "destructive",
-        title: `Airdrop failed`,
+        title: "Airdrop failed",
+      description: error.message ? error.response.data.error.message: description,
       });
     } finally {
       fetchBalance(wallet, connection).then((balance) => {

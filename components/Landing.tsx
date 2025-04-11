@@ -18,7 +18,7 @@ import {
   tokenState,
 } from "@/app/RecoilProvider";
 import Image from "next/image";
-import solana from "@/app/sol-logo.svg";
+import solana from "@/sol-logo.svg";
 import GetTransaction from "./GetTransaction";
 
 const Landing = () => {
@@ -145,7 +145,7 @@ const Landing = () => {
         <GetTransaction onClose={() => setHistoryStatus(false)} />
       )}
 
-      <Buttons className="justify-center ml-[32%] z-50 fixed top-[80%]" />
+      <Buttons className="justify-center ml-[32%] lg:ml-[35%] z-50 fixed top-[80%]" />
 
       {airDrop && <Airdrop onClose={() => setAirDrop(false)} />}
       {sendSolStatus && <SendSol onClose={() => setSendSolStatus(false)} />}
@@ -157,7 +157,7 @@ const Landing = () => {
     <div className="mt-4">
       <section className=" py-8">
         <div className="container mx-auto px-6 lg:px-8">
-          <div className="text-center">
+          <div className="text-center ">
             <h2 className="text-3xl font-bold text-gray-100">
               Manage Your Solana Assets
             </h2>
@@ -170,7 +170,7 @@ const Landing = () => {
             src={solana}
             alt="solana-img"
           />
-          <Buttons className="justify-center ml-[30%] z-50 fixed top-[82%]" />
+          <Buttons className="justify-center ml-[30%] lg:ml-[24%] z-50 fixed top-[82%]" />
         </div>
       </section>
     </div>

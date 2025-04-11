@@ -60,7 +60,7 @@ export default function Home() {
                 {/* <WalletDisconnectButton /> */}
               </div>
             </div>
-            <div className="pt-2 flex justify-center my-4 absolute top-0 left-[42.5%]">
+            <div className="pt-2 flex justify-center my-4 absolute top-0 left-[42.5%] ">
               <p
                 className={`py-2 px-4 text-lg rounded-xl text-center font-semibold ${
                   endpoint.type === "Devnet"

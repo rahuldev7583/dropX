@@ -57,7 +57,7 @@ export const fetchTransactions = async (
   // console.log(transactions);
   const transactions = await Promise.all(
     filteredSigns.map(async (sign) => {
-      const txn = await connection.getParsedTransaction(sign);
+      const txn = await connection.getParsedTransaction(sign, { maxSupportedTransactionVersion: 0});
 
       return txn;
     })
@@ -94,7 +94,6 @@ export const fetchTransactions = async (
           ? new Date(txn.blockTime * 1000).toLocaleString()
           : "",
       };
-
       const preTokenBalances = txn?.meta?.preTokenBalances;
       const postTokenBalances = txn?.meta?.postTokenBalances;
 
@@ -115,8 +114,8 @@ export const fetchTransactions = async (
           const mint = preTokenBalances[1]?.mint?.toString();
 
           result.tokenAmount =
-            preTokenBalances[1].uiTokenAmount.uiAmount &&
-            postTokenBalances[1].uiTokenAmount.uiAmount
+            preTokenBalances[1]?.uiTokenAmount?.uiAmount &&
+            postTokenBalances[1]?.uiTokenAmount?.uiAmount
               ? (
                   postTokenBalances[1].uiTokenAmount.uiAmount -
                   preTokenBalances[1].uiTokenAmount.uiAmount

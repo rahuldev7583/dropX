@@ -190,6 +190,7 @@ const SendToken = ({ onClose }: SendTokenProps) => {
             // console.log(txn);
 
             setTransactionHistory((prevState) => [...txn, ...prevState]);
+            return;
           }
         }
 
