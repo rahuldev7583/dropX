@@ -14,7 +14,6 @@ import {
 import { fetchBalance } from "./GetBalance";
 import { fetchTransactions } from "./GetTransaction";
 import axios from "axios";
-import { log } from "console";
 
 interface AirdropProps {
   onClose: () => void;
@@ -44,6 +43,7 @@ const Airdrop = ({ onClose }: AirdropProps) => {
     }
     try {
       setLoading(true);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const response:any = await axios.post(DEVNET_AIRDROP_API,  {
         "jsonrpc": "2.0",
         "id": 1,
@@ -101,13 +101,15 @@ const signature = response.data.result;
       setAmount("");
       setAirDrop(false);
       setLoading(false);
-    } catch (error:any) {
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    catch (error:any) {
       console.log({error});
       
       console.error("Airdrop failed:", error);
       setLoading(false);
       setAirDrop(false);
-      let description = "Airdrop failed. Please try again later.";
+      const description = "Airdrop failed. Please try again later.";
 
       toast({
         variant: "destructive",

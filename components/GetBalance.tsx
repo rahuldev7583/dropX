@@ -52,7 +52,7 @@ const GetBalance = () => {
     };
 
     updateBalance();
-  }, [wallet.connected, wallet.publicKey, connection]);
+  }, [wallet.connected, wallet.publicKey, connection, ]);
 
   return (
     <div className="ml-10">
